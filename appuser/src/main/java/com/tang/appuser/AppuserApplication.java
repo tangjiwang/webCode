@@ -8,5 +8,6 @@ public class AppuserApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(AppuserApplication.class, args);
+        System.out.println("11");
     }
 }
