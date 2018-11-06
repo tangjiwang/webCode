@@ -1,14 +1,15 @@
-package com.tang.appuser;
+package com.tang.configservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
-
+import org.springframework.cloud.config.server.EnableConfigServer;
 @SpringBootApplication
 @EnableDiscoveryClient
-public class AppuserApplication {
+@EnableConfigServer
+public class ConfigServiceApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(AppuserApplication.class, args);
+        SpringApplication.run(ConfigServiceApplication.class, args);
     }
 }
