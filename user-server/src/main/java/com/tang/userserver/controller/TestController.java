@@ -32,7 +32,7 @@ public class TestController {
     {
 
 
-    String str = "a b f2 cf 3d 4";
+    String str = "'' b f2 cf 3d 4";
         String[] s = str.trim().split(" ");
     List<LinkedHashMap<String,Object>> list = new LinkedList<>();
         for (int i = 0; i < s.length/2; i++) {

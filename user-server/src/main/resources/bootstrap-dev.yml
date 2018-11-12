@@ -15,7 +15,7 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: http://admin:123456aa@192.168.1.26:18080/eureka/
+      defaultZone: http://admin:123456aa@localhost:18080/eureka/
   instance:
     prefer-ip-address: true
     instance-id: ${spring.cloud.client.ipAddress}:${server.port}
