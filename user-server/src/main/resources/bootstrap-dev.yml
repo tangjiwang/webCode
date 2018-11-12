@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: user-service
+  cloud:
+    config:
+      discovery:
+        enabled: true
+        service-id: config-server
+      label: master
+      profile: dev
+      allow-override: true
+    bus:
+      trace:
+        enabled: true
+eureka:
+  client:
+    service-url:
+      defaultZone: http://admin:123456aa@192.168.1.26:18080/eureka/
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.cloud.client.ipAddress}:${server.port}
+server:
+  port: 38080
