@@ -12,12 +12,15 @@ spring:
     bus:
       trace:
         enabled: true
+    inetutils:
+      preferred-networks: 101.132.66.117
 eureka:
   client:
     service-url:
-      defaultZone: http://admin:123456aa@101.132.66.117:18080/eureka/
+      defaultZone: http://admin:123456aa@${eureka.instance.ip-address}:18080/eureka/
   instance:
     prefer-ip-address: true
     instance-id: ${spring.cloud.client.ipAddress}:${server.port}
+    ip-address: 101.132.66.117
 server:
   port: 38080
