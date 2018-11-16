@@ -8,6 +8,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="config-server" />
         <module name="eureka-service" />
+        <module name="msg-server" />
         <module name="user-server" />
       </profile>
     </annotationProcessing>
@@ -18,6 +19,7 @@
       <module name="config-service" target="1.8" />
       <module name="eureka-service" target="1.8" />
       <module name="eurekaSever" target="1.8" />
+      <module name="msg-server" target="1.8" />
       <module name="tjw" target="1.8" />
       <module name="user-server" target="1.8" />
     </bytecodeTargetLevel>
