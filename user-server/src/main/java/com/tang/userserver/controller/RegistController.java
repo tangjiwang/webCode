@@ -1,14 +1,27 @@
 package com.tang.userserver.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.netflix.discovery.converters.Auto;
 import com.tang.userserver.constant.ConstantProperties;
+import com.tang.userserver.dao.ICommonDao;
+import com.tang.userserver.dao.UserDao;
+import com.tang.userserver.domain.User;
 import com.tang.userserver.entity.ResponseModel;
+import com.tang.userserver.exception.SPTException;
 import com.tang.userserver.rpc.MsgServerRpc;
+import com.tang.userserver.util.DateUtil;
+import com.tang.userserver.util.JedisUtil;
+import com.tang.userserver.util.StringUtil;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
+import java.util.Date;
 import java.util.Random;
 
 
@@ -27,11 +40,90 @@ public class RegistController {
     @Autowired
     private MsgServerRpc msgServerRpc;
 
-    @ApiOperation(value = "发送短信验证码", notes = "tangjiwang")
+    @Autowired
+    private JedisUtil jedisUtil;
+
+    @Autowired
+    private UserDao userDao;
+
+    private static final String PHONENUMBER = "PHONENUMBER_HASH";
+    private static final String VERIFIYCODE = "VERIFIYCODE_DATA:";
+
+    @ApiOperation(value = "注册用户", notes = "tangjiwang")
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "query", name = "userName", value = "用户名", dataType = "string", required = true),
+            @ApiImplicitParam(paramType = "query", name = "passwd", value = "输入第一次密码", dataType = "string", required = true),
+            @ApiImplicitParam(paramType = "query", name = "passwdConfirm", value = "输入第二次密码", dataType = "string", required = true),
+            @ApiImplicitParam(paramType = "query", name = "phoneNo", value = "手机号码", dataType = "string", required = true),
+            @ApiImplicitParam(paramType = "query", name = "verifiyCode", value = "验证码", dataType = "string", required = true),
+            @ApiImplicitParam(paramType = "query", name = "registChannel", value = "注册渠道 '0' : ios, '1' : anrioid , '2' : 'pc'", dataType = "string", required = true)
+    })
+    @PostMapping(value = "/toRegistUser", produces = "application/json;charset=UTF-8")
+    @Transactional(rollbackFor = Exception.class)
+    public ResponseEntity<ResponseModel<JSONObject>> toRegist(String userName, String passwd, String passwdConfirm
+            , String phoneNo, String verifiyCode, String registChannel) {
+        if (StringUtil.isEmpty(userName) || StringUtil.isEmpty(passwd) || StringUtil.isEmpty(passwdConfirm)
+                || StringUtil.isEmpty(phoneNo) || StringUtil.isEmpty(verifiyCode) || StringUtil.isEmpty(registChannel)) {
+            return ResponseModel.error(HttpStatus.OK, ConstantProperties.ResultCode.ERROR_PARAM_ISNULL, ConstantProperties.ResultCode.ERROR_PARAM_ISNULL_VALUE);
+        } else {
+            if (!passwd.equals(passwdConfirm)) {
+                return ResponseModel.error(HttpStatus.OK, ConstantProperties.ResultRegist.ERROR_PASSWDCONFIRM, ConstantProperties.ResultRegist.ERROR_PASSWDDESC);
+            } else {
+                try {
+
+                    String redisValue = jedisUtil.hget(PHONENUMBER, phoneNo);
+                    if (StringUtil.isEmpty(redisValue))//如果手机号码为空，说明该账户未注册过。
+                    {
+                        String verifiycdoe = jedisUtil.getRedisStrValue(VERIFIYCODE + phoneNo);
+                        if (StringUtil.isEmpty(verifiycdoe))//如果验证码为空。说明验证码输入错误
+                        {
+                            return ResponseModel.error(HttpStatus.OK, ConstantProperties.ResultRegist.ERROR_VERIFIYCODE, ConstantProperties.ResultRegist.ERROR_VERIFIYDESC);
+                        } else {
+                            if (verifiycdoe.equals(verifiyCode)) {
+                                String registTime = DateUtil.longDate2StrDate(new Date().getTime());
+                                User user = new User();
+                                user.setPhoneNo(phoneNo);
+                                user.setPasswd(StringUtil.encryptStr(passwd));
+                                user.setUserName(userName);
+                                user.setVerifyCode(verifiyCode);
+                                user.setRegistTime(registTime);
+                                user.setRegistChannel(registChannel);
+                                JSONObject jsonObject1 = new JSONObject();
+                                jsonObject1.put("phoneNo", phoneNo);
+                                jsonObject1.put("userName", userName);
+                                jsonObject1.put("registChannel",registChannel);
+                                jsonObject1.put("registTime",registTime);
+                                int resultStatus = userDao.addUser(user);
+                                if (1 == resultStatus) {
+                                    jedisUtil.hset(PHONENUMBER,phoneNo,jsonObject1.toJSONString());
+                                    return ResponseModel.success();
+                                } else {
+                                    return ResponseModel.error(HttpStatus.OK, ConstantProperties.ResultRegist.ERROR_ADDUSER, ConstantProperties.ResultRegist.ERROR_ADDUSER_DESC);
+                                }
+                            } else {
+                                return ResponseModel.error(HttpStatus.OK, ConstantProperties.ResultRegist.ERROR_VERIFIYCODE, ConstantProperties.ResultRegist.ERROR_VERIFIYDESC);
+                            }
+                        }
+                    } else {
+                        return ResponseModel.error(HttpStatus.OK, ConstantProperties.ResultRegist.ERROR_USEREXITS_CODE, ConstantProperties.ResultRegist.ERROR_USEREXITS_DESC);
+                    }
+                } catch (SPTException e) {
+                    return ResponseModel.error(HttpStatus.OK, ConstantProperties.RedisProps.CONNECT_EXCEPTION, ConstantProperties.RedisProps.CONNECT_REDIS_VALUE);
+                } catch (NoSuchAlgorithmException e) {
+                    return ResponseModel.error(HttpStatus.OK, ConstantProperties.ResultRegist.ERROR_ENCRYPT_CODE, ConstantProperties.ResultRegist.ERROR_ENCRYPT_DESC);
+                } catch (UnsupportedEncodingException e) {
+                    return ResponseModel.error(HttpStatus.OK, ConstantProperties.ResultRegist.ERROR_ENCRYPT_CODE, ConstantProperties.ResultRegist.ERROR_ENCRYPT_DESC);
+                }
+            }
+        }
+    }
+
+
+    @ApiOperation(value = "注册时发送的短信验证码", notes = "tangjiwang")
     @ApiImplicitParams({
             @ApiImplicitParam(paramType = "query", name = "phoneno", value = "手机号码", dataType = "string", required = true)
     })
-    @PostMapping(value = "/toSendVrifiyCode",produces = "application/json;charset=UTF-8")
+    @PostMapping(value = "/toSendVrifiyCode", produces = "application/json;charset=UTF-8")
     public ResponseEntity<ResponseModel<JSONObject>> toSendVerifyCode(String phoneno) {
         JSONObject jsonObject = new JSONObject();
         String phoneNo = phoneno;
@@ -50,13 +142,12 @@ public class RegistController {
         ResponseModel<JSONObject> responseModel = msgServerRpc.sendSms(jsonObject);
         if (null != responseModel) {
             if (responseModel.getRespCode() == ConstantProperties.ResultCode.RESP_SUCCESS) {
-               return ResponseModel.success();
+                return ResponseModel.success();
             } else {
-                return ResponseModel.error(HttpStatus.OK,responseModel.getRespCode(),responseModel.getRespDesc());
+                return ResponseModel.error(HttpStatus.OK, responseModel.getRespCode(), responseModel.getRespDesc());
             }
         }
-        return ResponseModel.error(HttpStatus.INTERNAL_SERVER_ERROR, ConstantProperties.ResultCode.ERROR_OTHER,ConstantProperties.ResultCode.ERROR_OTHER_DESC);
-
+        return ResponseModel.error(HttpStatus.OK, ConstantProperties.ResultCode.ERROR_OTHER, ConstantProperties.ResultCode.ERROR_OTHER_DESC);
     }
 
 }

@@ -1,34 +1,105 @@
 package com.tang.msgserver.constant;
 
 /**
- * @ClassName:${CLASSNAME}
- * @Description:
- * @author: lurufeng
- * @company: 柠檬科技
- * @date: 2017/7/30
- * @version: v2.7
+ * @Description: 常量
+ * @Param:
+ * @return:
+ * @Author: tangjiwang
+ * @Date: 2018/11/16
  */
 public interface ConstantProperties {
 
     public interface  SendSMS{
+        /**
+         * 短信发送间隔时间 单位秒
+         */
+        public static int SMSTIME=60*2;
+
+        /**
+         * 2分钟只允许发送一次验证码code
+         */
         public static int ERROR_SENDTIME=101;
-        public static String VERIFIYCODE="888888";//默认6位数验证码;
+
+        /**
+         * 2分钟只允许发送一次验证码code
+         */
         public static String SMSERROR_TIPS="2分钟内只允许发送一次验证码";
+
+        public static String VERIFIYCODE="888888";//默认6位数验证码;
     }
 
-    public interface ResultCode {
+    public interface  ResultRegist{
 
 
         /**
-         * 参数不正确
+         *验证码不正确code
          */
+        public static final int ERROR_VERIFIYCODE=207;//验证码不正确code
+        /**
+         * 验证码不正确 desc
+         */
+        public static final String ERROR_VERIFIYDESC="验证码不正确";
+        /**
+         * 添加用户失败code
+         */
+        public static final int ERROR_ADDUSER=208;//添加用户失败
+        /**
+         * 添加用户失败desc
+         */
+        public static final String ERROR_ADDUSER_DESC="添加用户失败";
 
+        /**
+         * 手机号码已经存在
+         */
+        public static final int ERROR_USEREXITS_CODE=206;//手机号码已经存在;
+        /**
+         * 用户已经存在,可以直接登录
+         */
+        public static final String ERROR_USEREXITS_DESC="用户已经存在,请直接用该手机号码、或者账号密码登录";
+        /**
+         * 两次密码输入不一致，返回码205
+         */
+        public static final int ERROR_PASSWDCONFIRM=205;//两次密码输入不一致
+        /**
+         * 两次密码输入不一致,返回描述
+         */
+        public static final String ERROR_PASSWDDESC="两次密码输入不一致,请重新输入";
+
+        /**
+         * 加密失败
+         **/
+        public static int ERROR_ENCRYPT_CODE=207;
+
+        /**加密失败desc**/
+        public static String ERROR_ENCRYPT_DESC="加密失败";
+    }
+
+    public interface ResultCode {
+        /**
+         * 参数格式不正确code
+         */
         public static final int ERROR_PARAM=203;
+
+        /**
+         * 参数格式不正确desc
+         */
+        public static final  String ERROR_PARAM_VAlUE="参数格式不正确";
+
+        /**
+         * 参数为空code
+         */
+        public static final int ERROR_PARAM_ISNULL=204;
+
+        /**
+         * 参数为空desc
+         */
+        public static final String ERROR_PARAM_ISNULL_VALUE="参数为空";
 
         /**
          * 内部错误，未知异常
          */
         public static final int ERROR_OTHER=999;
+
         /**
          *未知异常内部错误
          */
@@ -62,21 +133,28 @@ public interface ConstantProperties {
 
         /** http请求异常返回码 **/
         public static final String HTTP_STATUS_500 = "500";
-    }
 
+    }
     /**
      * redis相关常量
      */
     public interface RedisProps {
+
         /**
          * WAIT_TIME 获取不到redis资源,等待500ms
          */
         public static final int WAIT_TIME = 500;
 
         /**
+         * 连接redis失败描述
+         */
+        public static final String CONNECT_REDIS_VALUE="连接Redis 失败";
+
+        /**
          * 连接redis失败
          */
         public static final int CONNECT_EXCEPTION=505;
+
         /**
          * CYCLE_TIMES 连续获取3次失败,则不再获取
          */
@@ -86,9 +164,14 @@ public interface ConstantProperties {
     public interface  WangJianProps
     {
         /**
-         * 连接网建系统失败
+         * 连接网建系统失败code
          */
         public static final int CONNECT_EXCEPTION=505;
+        /**
+         * 连接中国网建系统失败desc
+         */
+        public static final String  CONNECT_EXCEPTIONVALUE="连接中国网建系统异常";
+
     }
 
     public interface ResponseDesc {

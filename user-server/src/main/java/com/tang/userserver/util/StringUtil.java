@@ -3,7 +3,11 @@ package com.tang.userserver.util;
 import org.springframework.stereotype.Component;
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.NumberFormat;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -873,5 +877,51 @@ public class StringUtil {
        
        return str;       
    }
+    /***
+     * MD5加密
+     * @param str 需要加密的参数
+     * @return
+     * @throws Exception
+     */
+    public static String encrypt_MD5(String str) throws Exception {
+        MessageDigest md = MessageDigest.getInstance("MD5");
+        md.update(str.getBytes());
+        return new BigInteger(1,md.digest()).toString(16);
+    }
+
+    /***
+     * Base64加密
+     * @param str 需要加密的参数
+     * @return
+     * @throws Exception
+     */
+    public static String encrypt_Base64(String str) throws Exception {
+        String result = Base64.getEncoder().encodeToString(str.getBytes("UTF-8"));
+        return result;
+    }
+
+    /***
+     * Base64解密
+     * @param str 需要解密的参数
+     * @return
+     * @throws Exception
+     */
+    public static String decrypt_Base64(String str) throws Exception {
+        byte[] asBytes = Base64.getDecoder().decode(str);
+        String result = new String(asBytes,"UTF-8");
+        return result;
+    }
+
+    /**
+     * md5+base64加密
+     * @return
+     */
+    public static String encryptStr(String str) throws NoSuchAlgorithmException,UnsupportedEncodingException {
+        MessageDigest md = MessageDigest.getInstance("MD5");
+        md.update(str.getBytes());
+        String resultMD5 = new BigInteger(1,md.digest()).toString(16);
+        String resultBase64 = Base64.getEncoder().encodeToString(str.getBytes("UTF-8"));
+        return resultMD5+resultBase64;
+    }
 	
 }

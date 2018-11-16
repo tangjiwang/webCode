@@ -15,6 +15,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
  **/
 @FeignClient(value = "MSG-SERVER",url = "http://localhost:48080")
 public interface MsgServerRpc {
-    @RequestMapping(value = "/sendSms",method = RequestMethod.POST)
+    @RequestMapping(value = "/regist/sendSms",method = RequestMethod.POST)
     ResponseModel<JSONObject> sendSms(JSONObject  jsonObject);
 }
