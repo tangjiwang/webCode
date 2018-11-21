@@ -27,7 +27,7 @@ public class DateUtil {
      * 把long time 转换为 YYYYMMDD时间
      */
     public static String longTimeToYMD(Long time) {
-        return new SimpleDateFormat("YYYYMMDD").format(new Date(time));
+        return new SimpleDateFormat("YYYYMMdd").format(new Date(time));
     }
 
     /**

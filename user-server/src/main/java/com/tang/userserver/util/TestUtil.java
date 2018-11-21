@@ -53,12 +53,22 @@ public class TestUtil {
         return result;
     }
 
-    public static void main(String[] args)  throws  Exception {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("YYYYMMDD");
-        Date date = new Date();
-        Long time  = date.getTime();
+    /**
+     * 把long time 转换为 YYYYMMDD时间
+     */
+    public static String longTimeToYMD(Long time) {
+        return new SimpleDateFormat("YYYYMMdd").format(new Date(time));
+    }
 
-        System.out.println( simpleDateFormat.format(new Date().getTime()));
+
+    public static void main(String[] args)  throws  Exception {
+        System.out.println(longTimeToYMD(new Date().getTime()));
+
+        //        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("YYYYMMDD");
+//        Date date = new Date();
+//        Long time  = date.getTime();
+//
+//        System.out.println( simpleDateFormat.format(new Date().getTime()));
         //System.out.println( encrypt_MD5("123465aa"));
 //        System.out.println(encrypt_Base64("123456aa"));
 //        int a =   (int)(1+Math.random()*(2));
