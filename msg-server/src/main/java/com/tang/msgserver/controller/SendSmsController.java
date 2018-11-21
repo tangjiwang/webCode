@@ -34,7 +34,7 @@ public class SendSmsController {
     private JedisUtil jedisUtil;
 
     private static final String VERIFIYCODE = "VERIFIYCODE_DATA:";
-    private static final String PHONENUMBER = "PHONENUMBER_HASH";
+    private static final String REGIST_PHONENUMBER_HASH = "REGIST_PHONENUMBER_HASH";
 
 
     @PostMapping(value = "/regist/sendSms", produces = "application/json;charset=UTF-8")
@@ -43,15 +43,15 @@ public class SendSmsController {
             try {
                 String phoneno = jsonObject.getString("phoneNo");//收件人手机号码
                 String verifiycode = jsonObject.getString("verifiyCode");//短信验证码
-                String allPhone = jedisUtil.hget(PHONENUMBER, phoneno);//获取该手机号是否已经注册过
-                if (StringUtil.isEmpty(allPhone)) {
+                String registPhone = jedisUtil.hget(REGIST_PHONENUMBER_HASH, phoneno);//获取该手机号是否已经注册过
+                if (StringUtil.isEmpty(registPhone)) {
                     String verifiyValue = jedisUtil.getRedisStrValue(VERIFIYCODE + phoneno);//获取缓存是否有数据
                     if (null != verifiyValue)//防止恶意短信炮轰。 2min内只允许发送一次
                     {
                         return ResponseModel.error(HttpStatus.OK, ConstantProperties.SendSMS.ERROR_SENDTIME, ConstantProperties.SendSMS.SMSERROR_TIPS);
                     } else {
                         int statusCode = SendSmsUtil.sendSms(phoneno, verifiycode);//发送返回状态
-                        if (SEND_SUCCESS == statusCode) {
+                        if (SEND_SUCCESS == statusCode) {//把验证码放入缓存里
                             jedisUtil.setRedisStrValue(VERIFIYCODE + phoneno, verifiycode, ConstantProperties.SendSMS.SMSTIME);
                         }
                     }

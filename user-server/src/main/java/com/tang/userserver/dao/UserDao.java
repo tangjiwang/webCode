@@ -11,5 +11,6 @@ import java.util.Map;
  */
 public interface UserDao {
      int addUser(User user) throws SPTException;
-     List<Map<String,Object>> queryUserLogin(User user) throws  SPTException;
+     List<Map<String,Object>> queryPasswdByName(String name) throws  SPTException;
+
 }

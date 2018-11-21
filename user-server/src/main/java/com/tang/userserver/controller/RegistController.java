@@ -46,8 +46,9 @@ public class RegistController {
     @Autowired
     private UserDao userDao;
 
-    private static final String PHONENUMBER = "PHONENUMBER_HASH";
+    private static final String REGIST_PHONENUMBER_HASH = "REGIST_PHONENUMBER_HASH";
     private static final String VERIFIYCODE = "VERIFIYCODE_DATA:";
+    private static final String REGIST_USERINFO_HASH = "REGIST_USERINFO_HASH:";
 
     @ApiOperation(value = "注册用户", notes = "tangjiwang")
     @ApiImplicitParams({
@@ -71,16 +72,21 @@ public class RegistController {
             } else {
                 try {
 
-                    String redisValue = jedisUtil.hget(PHONENUMBER, phoneNo);
-                    if (StringUtil.isEmpty(redisValue))//如果手机号码为空，说明该账户未注册过。
+                    String redisValue = jedisUtil.hget(REGIST_PHONENUMBER_HASH, phoneNo);
+                    //看用户名是否存在。用户名必须是唯一的
+                    String userInfo  = jedisUtil.hget(REGIST_USERINFO_HASH,userName);
+                    if(StringUtil.isNotEmpty(userInfo)){
+                        return ResponseModel.error(HttpStatus.OK, ConstantProperties.ResultRegist.ERROR_USERNAME_EXISTS ,ConstantProperties.ResultRegist.ERROR_USERNAME_EXISTSDESC);
+                    }
+                    if (StringUtil.isEmpty(redisValue))//如果手机号码为空，说明该账户未注册过。允许注册
                     {
-                        String verifiycdoe = jedisUtil.getRedisStrValue(VERIFIYCODE + phoneNo);
-                        if (StringUtil.isEmpty(verifiycdoe))//如果验证码为空。说明验证码输入错误
-                        {
-                            return ResponseModel.error(HttpStatus.OK, ConstantProperties.ResultRegist.ERROR_VERIFIYCODE, ConstantProperties.ResultRegist.ERROR_VERIFIYDESC);
+
+                        String verifiycdoe = jedisUtil.getRedisStrValue(VERIFIYCODE + phoneNo);//通过手机号码在缓存里找验证码。
+                        if (StringUtil.isEmpty(verifiycdoe)){//如果验证码为空。说明验证码获取失败
+                            return ResponseModel.error(HttpStatus.OK, ConstantProperties.ResultRegist.ERROR_GET_VERIFIYCODE ,ConstantProperties.ResultRegist.ERROR_GET_VERIFIYCODEDESC);
                         } else {
                             if (verifiycdoe.equals(verifiyCode)) {
-                                String registTime = DateUtil.longDate2StrDate(new Date().getTime());
+                                String registTime = DateUtil.longDate2StrDate(new Date().getTime());//注册时间
                                 User user = new User();
                                 user.setPhoneNo(phoneNo);
                                 user.setPasswd(StringUtil.encryptStr(passwd));
@@ -95,7 +101,8 @@ public class RegistController {
                                 jsonObject1.put("registTime",registTime);
                                 int resultStatus = userDao.addUser(user);
                                 if (1 == resultStatus) {
-                                    jedisUtil.hset(PHONENUMBER,phoneNo,jsonObject1.toJSONString());
+                                    jedisUtil.hset(REGIST_PHONENUMBER_HASH,phoneNo,jsonObject1.toJSONString());
+                                    jedisUtil.hset(REGIST_USERINFO_HASH,userName,jsonObject1.toJSONString());
                                     return ResponseModel.success();
                                 } else {
                                     return ResponseModel.error(HttpStatus.OK, ConstantProperties.ResultRegist.ERROR_ADDUSER, ConstantProperties.ResultRegist.ERROR_ADDUSER_DESC);
@@ -107,12 +114,15 @@ public class RegistController {
                     } else {
                         return ResponseModel.error(HttpStatus.OK, ConstantProperties.ResultRegist.ERROR_USEREXITS_CODE, ConstantProperties.ResultRegist.ERROR_USEREXITS_DESC);
                     }
-                } catch (SPTException e) {
-                    return ResponseModel.error(HttpStatus.OK, ConstantProperties.RedisProps.CONNECT_EXCEPTION, ConstantProperties.RedisProps.CONNECT_REDIS_VALUE);
                 } catch (NoSuchAlgorithmException e) {
+                    e.printStackTrace();
                     return ResponseModel.error(HttpStatus.OK, ConstantProperties.ResultRegist.ERROR_ENCRYPT_CODE, ConstantProperties.ResultRegist.ERROR_ENCRYPT_DESC);
                 } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
                     return ResponseModel.error(HttpStatus.OK, ConstantProperties.ResultRegist.ERROR_ENCRYPT_CODE, ConstantProperties.ResultRegist.ERROR_ENCRYPT_DESC);
+                }catch (SPTException e) {
+                    e.printStackTrace();
+                    return ResponseModel.error(HttpStatus.OK, ConstantProperties.ResultCode.ERROR_OTHER, ConstantProperties.ResultCode.ERROR_OTHER_DESC);
                 }
             }
         }
@@ -131,7 +141,7 @@ public class RegistController {
         Random rand = new Random();
         StringBuffer verifiyCode = new StringBuffer();
         for (int i = 0; i < 6; i++) {
-            verifiyCode.append(sources.charAt(rand.nextInt(9)) + "");
+            verifiyCode.append(sources.charAt(rand.nextInt(10)) + "");
         }
         if (verifiyCode.equals(""))//如果6位数随机数 为空，给个默认验证码
         {

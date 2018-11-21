@@ -1,8 +1,12 @@
 package com.tang.userserver.util;
 
+import java.awt.*;
 import java.math.BigInteger;
 import java.security.MessageDigest;
+import java.text.SimpleDateFormat;
 import java.util.Base64;
+import java.util.Date;
+import java.util.Random;
 
 /**
  * @program: gitCode
@@ -50,7 +54,29 @@ public class TestUtil {
     }
 
     public static void main(String[] args)  throws  Exception {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("YYYYMMDD");
+        Date date = new Date();
+        Long time  = date.getTime();
+
+        System.out.println( simpleDateFormat.format(new Date().getTime()));
         //System.out.println( encrypt_MD5("123465aa"));
-        System.out.println(encrypt_Base64("123456aa"));
+//        System.out.println(encrypt_Base64("123456aa"));
+//        int a =   (int)(1+Math.random()*(2));
+//        System.out.println(a);
+//        String sources = "0123456789";
+//        Random random = new Random();
+//        //System.out.println(random.nextInt(9));
+//        StringBuilder sb= new StringBuilder();
+//        for (int i = 0; i < 106; i++) {
+//            sb.append(sources.charAt(random.nextInt(10)) + "");
+//        }
+//        System.out.println(sb);
+//
+//        StringBuilder sb = new StringBuilder("WW");
+//        Random random = new Random();
+//        for (int i = 0; i <8 ; i++) {
+//            sb.append(random.nextInt(10));
+//        }
+//        System.out.println(sb.toString());
     }
 }

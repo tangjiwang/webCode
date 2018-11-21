@@ -721,7 +721,6 @@ public class StringUtil {
 	}
 	/**
 	 * 方法描述: 把null值转化为空串
-	 * @param 字符串
 	 * @return 如果是null对象,则返回空串,即"",非空,则返回原
 	 */
 	public static String changeNullToEmpty(String str) {
@@ -921,7 +920,8 @@ public class StringUtil {
         md.update(str.getBytes());
         String resultMD5 = new BigInteger(1,md.digest()).toString(16);
         String resultBase64 = Base64.getEncoder().encodeToString(str.getBytes("UTF-8"));
-        return resultMD5+resultBase64;
+        return +resultMD5.length()+resultMD5+resultBase64;
     }
-	
+
+
 }
