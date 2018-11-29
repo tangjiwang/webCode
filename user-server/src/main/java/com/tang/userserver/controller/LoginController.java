@@ -19,11 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import javax.websocket.Session;
-import javax.xml.transform.Result;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
@@ -48,7 +44,7 @@ public class LoginController {
     @Autowired
     private UserDao userDao;
 
-    private static final String REGIST_PHONENUMBER_HASH = "REGIST_PHONENUMBER_HASH";
+    private static final String REGIST_PHONENUMBER_HASH = "REGIST_PHONENUMBER_HASH:";
     private static final String VERIFIYCODE = "VERIFIYCODE_DATA:";
     private static final String REGIST_USERINFO_HASH = "REGIST_USERINFO_HASH:";
 
@@ -90,6 +86,16 @@ public class LoginController {
 
                     if (StringUtil.encryptStr(passwd).equals(encryPasswd)) {
                         JSONObject jsonObject = new JSONObject();
+
+                        String data = jedisUtil.hget(LOGIN_USERSESSIONINFO,phoneNo);
+                        if(StringUtil.isEmpty(data)){
+                            jsonObject.put("logintime_prev", loginTime);
+                        }else{
+                            JSONObject jsonObject2 = JSONObject.parseObject(data);
+                            String time = jsonObject2.getString("logintime");
+                            jsonObject.put("logintime_prev", time);
+                        }
+
                         jsonObject.put("phoneNo", phoneNo);
                         jsonObject.put("username", username);
                         jsonObject.put("channel", channel);
@@ -140,17 +146,27 @@ public class LoginController {
                     } else {
                         JSONObject jsonObject = JSONObject.parseObject(redis_phone);
                         String loginTime = DateUtil.longDate2StrDate(new Date().getTime());//当前时间
+                        String data = jedisUtil.hget(LOGIN_USERSESSIONINFO,phoneNo);
                         JSONObject jsonObject1 = new JSONObject();
 
+                        if(StringUtil.isEmpty(data)){
+                            jsonObject1.put("logintime_prev", loginTime);
+                        }else{
+                            JSONObject jsonObject2 = JSONObject.parseObject(data);
+                            String time = jsonObject2.getString("logintime");
+                            jsonObject1.put("logintime_prev", time);
+                        }
                         jsonObject1.put("phoneNo", phoneNo);
                         jsonObject1.put("username", jsonObject.getString("userName"));
                         jsonObject1.put("loginchannel", channel);
                         jsonObject1.put("logintime", loginTime);
+
                         session.setAttribute("user", jsonObject1);
                         jedisUtil.hset(LOGIN_USERSESSIONINFO, phoneNo, jsonObject1.toJSONString());
                         jedisUtil.delRedisStrValue(VERIFIYCODE + phoneNo);
                     }
                 } else {
+
                     //该手机号没有注册，默认给注册。用户名为随机 WW_开头随机数。 密码 根据用户名加密。 后续自己修改。
                     StringBuilder sb = new StringBuilder("WW_");
                     //前6位YYYYMMDDD
@@ -172,13 +188,24 @@ public class LoginController {
                     int resultStatus = userDao.addUser(user);
 
                     if (1 == resultStatus) {//把登陆数据放到缓存里
+                        JSONObject jsonObject = new JSONObject();
+
+                        String data = jedisUtil.hget(LOGIN_USERSESSIONINFO,phoneNo);
                         JSONObject jsonObject1 = new JSONObject();
-                        jsonObject1.put("phoneNo", phoneNo);
-                        jsonObject1.put("username", sb.toString());
-                        jsonObject1.put("channel", channel);
-                        jsonObject1.put("loginTime", registTime);
-                        session.setAttribute("user", jsonObject1);
-                        jedisUtil.hset(LOGIN_USERSESSIONINFO, phoneNo, jsonObject1.toJSONString());
+                        if(StringUtil.isEmpty(data)){
+                            jsonObject.put("logintime_prev", registTime);
+                        }else{
+                            JSONObject jsonObject2= JSONObject.parseObject(data);
+                            String timePrev = jsonObject2.getString("logintime");
+                            jsonObject.put("logintime_prev", timePrev);
+                        }
+
+                        jsonObject.put("phoneNo", phoneNo);
+                        jsonObject.put("username", sb.toString());
+                        jsonObject.put("channel", channel);
+                        jsonObject.put("loginTime", registTime);
+                        session.setAttribute("user", jsonObject);
+                        jedisUtil.hset(LOGIN_USERSESSIONINFO, phoneNo, jsonObject.toJSONString());
                         jedisUtil.delRedisStrValue(VERIFIYCODE + phoneNo);
                     } else {
                         return ResponseModel.error(HttpStatus.OK, ConstantProperties.ResultRegist.ERROR_ADDUSER, ConstantProperties.ResultRegist.ERROR_ADDUSER_DESC);

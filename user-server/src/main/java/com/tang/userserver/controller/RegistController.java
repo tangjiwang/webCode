@@ -46,7 +46,7 @@ public class RegistController {
     @Autowired
     private UserDao userDao;
 
-    private static final String REGIST_PHONENUMBER_HASH = "REGIST_PHONENUMBER_HASH";
+    private static final String REGIST_PHONENUMBER_HASH = "REGIST_PHONENUMBER_HASH:";
     private static final String VERIFIYCODE = "VERIFIYCODE_DATA:";
     private static final String REGIST_USERINFO_HASH = "REGIST_USERINFO_HASH:";
 
@@ -103,6 +103,7 @@ public class RegistController {
                                 if (1 == resultStatus) {
                                     jedisUtil.hset(REGIST_PHONENUMBER_HASH,phoneNo,jsonObject1.toJSONString());
                                     jedisUtil.hset(REGIST_USERINFO_HASH,userName,jsonObject1.toJSONString());
+                                    jedisUtil.delRedisStrValue(VERIFIYCODE+phoneNo);
                                     return ResponseModel.success();
                                 } else {
                                     return ResponseModel.error(HttpStatus.OK, ConstantProperties.ResultRegist.ERROR_ADDUSER, ConstantProperties.ResultRegist.ERROR_ADDUSER_DESC);

@@ -19,14 +19,13 @@ import java.io.IOException;
 
 
 /**
- * @program: gitCode
- * @description:
+ * @description:注册和登陆 发送短信
  * @author: tangjiwang
  * @Param $
  * @create: 2018-11-15 11:27
  **/
 @RestController
-public class SendSmsController {
+public class RegistLoginSmsController {
 
     private static final int SEND_SUCCESS = 200;
 
@@ -34,17 +33,17 @@ public class SendSmsController {
     private JedisUtil jedisUtil;
 
     private static final String VERIFIYCODE = "VERIFIYCODE_DATA:";
-    private static final String REGIST_PHONENUMBER_HASH = "REGIST_PHONENUMBER_HASH";
+    private static final String REGIST_PHONENUMBER_HASH = "REGIST_PHONENUMBER_HASH:";
 
 
-    @PostMapping(value = "/regist/sendSms", produces = "application/json;charset=UTF-8")
+    @PostMapping(value = "/registLogin/sendSms", produces = "application/json;charset=UTF-8")
     public ResponseEntity<ResponseModel<JSONObject>> sendSms(@RequestBody JSONObject jsonObject) {
         if (null != jsonObject) {
             try {
                 String phoneno = jsonObject.getString("phoneNo");//收件人手机号码
                 String verifiycode = jsonObject.getString("verifiyCode");//短信验证码
-                String registPhone = jedisUtil.hget(REGIST_PHONENUMBER_HASH, phoneno);//获取该手机号是否已经注册过
-                if (StringUtil.isEmpty(registPhone)) {
+                //String registPhone = jedisUtil.hget(REGIST_PHONENUMBER_HASH, phoneno);//获取该手机号是否已经注册过
+                //if (StringUtil.isEmpty(registPhone)) {
                     String verifiyValue = jedisUtil.getRedisStrValue(VERIFIYCODE + phoneno);//获取缓存是否有数据
                     if (null != verifiyValue)//防止恶意短信炮轰。 2min内只允许发送一次
                     {
@@ -55,9 +54,9 @@ public class SendSmsController {
                             jedisUtil.setRedisStrValue(VERIFIYCODE + phoneno, verifiycode, ConstantProperties.SendSMS.SMSTIME);
                         }
                     }
-                } else {
+               /* } else {
                     return ResponseModel.error(HttpStatus.OK, ConstantProperties.ResultRegist.ERROR_USEREXITS_CODE, ConstantProperties.ResultRegist.ERROR_USEREXITS_DESC);
-                }
+                }*/
             } catch (HttpException e) {
                 e.printStackTrace();
                 return ResponseModel.error(HttpStatus.OK, ConstantProperties.WangJianProps.CONNECT_EXCEPTION, ConstantProperties.WangJianProps.CONNECT_EXCEPTIONVALUE);

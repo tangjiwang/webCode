@@ -1,5 +1,7 @@
 package com.tang.userserver.entity;
 
+import com.alibaba.fastjson.JSONObject;
+import com.tang.userserver.constant.ConstantProperties;
 import org.springframework.http.ResponseEntity;
 
 import java.io.Serializable;
@@ -19,7 +21,9 @@ public class ResponseModel<T> implements Serializable {
 
     private String respDesc;//返回描述
 
-    private T respData;//返回数据
+    private T respData;//返回数据;
+
+
 
     public ResponseModel(int respCode, String respDesc, T respData) {
         this.respCode = respCode;
@@ -79,4 +83,5 @@ public class ResponseModel<T> implements Serializable {
                 ", respData=" + respData +
                 '}';
     }
+
 }

@@ -6,6 +6,7 @@ import com.tang.userserver.domain.User;
 import com.tang.userserver.exception.SPTException;
 import com.tang.userserver.util.DateUtil;
 import com.tang.userserver.util.StringUtil;
+import javafx.beans.binding.StringBinding;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +41,17 @@ public class UserDaoImpl implements UserDao {
      */
     private static String QUERY_PASSWDBYNAME = "select passwd from t_user where name =:name and del_flag = 0";
 
+    /**
+     * 通过用户名修改密码
+     */
+    private static String MODIFY_PASSWDBYNAME ="update t_user set passwd =:passwd and del_flag=0";
+
+    /**
+     * 新增用户
+     * @param user
+     * @return
+     * @throws SPTException
+     */
     @Override
     public int addUser(User user) throws SPTException {
 
@@ -60,6 +72,13 @@ public class UserDaoImpl implements UserDao {
 
     }
 
+
+    /**
+     * 通过用户名查找密码
+     * @param name
+     * @return
+     * @throws SPTException
+     */
     @Override
     public List<Map<String, Object>> queryPasswdByName(String name) throws SPTException {
         StringBuilder sb = new StringBuilder(QUERY_PASSWDBYNAME);
@@ -67,4 +86,21 @@ public class UserDaoImpl implements UserDao {
         map.put("name",name);
         return commonDao.queryForList(sb.toString(),map);
     }
+
+    /**
+     * 通过用户名重置登陆密码
+     *
+     * @param name
+     * @param passwd
+     * @return
+     * @throws SPTException
+     */
+    @Override
+    public int resetPasswd(String name, String passwd) throws SPTException {
+        StringBuilder sb = new StringBuilder(MODIFY_PASSWDBYNAME);
+        Map<String,Object> map = new HashMap<>();
+        map.put("passwd",passwd);
+        return  commonDao.update(sb.toString(),map);
+    }
+
 }

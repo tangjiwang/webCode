@@ -17,6 +17,15 @@ public interface ConstantProperties {
 
     public interface ResultRegist {
         /**
+         * 用户名与手机号码绑定不一致 code
+         */
+        public static final int ISBINDNOTMATCHCODE=210;
+
+        /**
+         * 用户名与手机号码绑定不一致 desc
+         */
+        public static final String ISBINDNOTMATCHDESC="账户与该手机号码绑定不一致";
+        /**
          * 该用户已经被占用，换个用户名code
          */
         public static final int ERROR_USERNAME_EXISTS=209;
@@ -99,6 +108,14 @@ public interface ConstantProperties {
 
     public interface ResultCode {
         /**
+         *          * 两次输入不一致，请重新输入code
+         */
+        public static final int ERROR_INPUT_TWICECODE=204;
+        /**
+         * 两次输入不一致，请重新输入desc
+         */
+        public static final String ERROR_INPUT_TWICEDESC="两次输入不一致,重新输入";
+        /**
          * 参数格式不正确code
          */
         public static final int ERROR_PARAM = 203;
@@ -168,12 +185,12 @@ public interface ConstantProperties {
         /**
          * http请求成功返回码
          **/
-        public static final String HTTP_STATUS_200 = "200";
+        public static final int HTTP_STATUS_200 = 200;
 
         /**
          * http请求异常返回码
          **/
-        public static final String HTTP_STATUS_500 = "500";
+        public static final int HTTP_STATUS_500 = 500;
 
     }
 
